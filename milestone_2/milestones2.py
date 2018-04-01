@@ -25,6 +25,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 
+# new log error
+from sklearn.metrics import log_loss
+from sklearn.metrics import make_scorer
+
 train_df = pd.read_csv("/Users/jiayaocheng/Documents/517Python/Titanic/train.csv")
 
 # dropping features that not related(name and id) or not very useful(ticket) or too many null values(cabin)
@@ -91,30 +95,34 @@ Y = train_df["Survived"]
 #kf=KFold(len(Y), n_folds=10)   in cross_val_score, is cv=int n, then, is use n_fold validation
 
 logreg = LogisticRegression()
-logregscores = cross_val_score(logreg, X, Y , cv=10)
-print("Accuracy of logreg after 10fold-val: %0.2f (+/- %0.2f)" % (logregscores.mean(), logregscores.std() * 2))
+logregscores = cross_val_score(logreg, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of logreg after 10fold-val: %0.2f (+/- %0.2f)" % (logregscores.mean(), logregscores.std() * 2))
 
 percep = Perceptron(max_iter=1000, tol=None)
-percepscores = cross_val_score(percep, X, Y , cv=10)
-print("Accuracy of percep after 10fold-val: %0.2f (+/- %0.2f)" % (percepscores.mean(), percepscores.std() * 2))
+percepscores = cross_val_score(percep, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of percep after 10fold-val: %0.2f (+/- %0.2f)" % (percepscores.mean(), percepscores.std() * 2))
 
 DCtree = tree.DecisionTreeClassifier()
-DCtreescores = cross_val_score(DCtree, X, Y , cv=10)
-print("Accuracy of DCtree after 10fold-val: %0.2f (+/- %0.2f)" % (DCtreescores.mean(), DCtreescores.std() * 2))
+DCtreescores = cross_val_score(DCtree, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of DCtree after 10fold-val: %0.2f (+/- %0.2f)" % (DCtreescores.mean(), DCtreescores.std() * 2))
 
-#Gaua = GaussianProcessClassifier(kernel=default RBF + dotproduct)
+#Gaua = GaussianProcessClassifier(kernel=default RBF + dotproduct + dotproduct**2 + Constant)
 Gaua1 = GaussianProcessClassifier(1.0 * RBF(1.0))
-Gaua1scores = cross_val_score(Gaua1, X, Y , cv=10)
-print("Accuracy of GP+RBF after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua1scores.mean(), Gaua1scores.std() * 2))
+Gaua1scores = cross_val_score(Gaua1, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+RBF after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua1scores.mean(), Gaua1scores.std() * 2))
 
-Gaua2 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0)**2)
-Gaua2scores = cross_val_score(Gaua2, X, Y , cv=10)
-print("Accuracy of GP+Dot after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua2scores.mean(), Gaua2scores.std() * 2))
-#
+Gaua2 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0))
+Gaua2scores = cross_val_score(Gaua2, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+Dot after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua2scores.mean(), Gaua2scores.std() * 2))
+
+Gaua3 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0)**2)
+Gaua3scores = cross_val_score(Gaua3, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+D^2 after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua3scores.mean(), Gaua3scores.std() * 2))
+
 # Gaua3 = GaussianProcessClassifier(Product(1.0 * RBF(1.0), 1.0 * DotProduct(sigma_0=1.0)**2))
 # Gaua3scores = cross_val_score(Gaua3, X, Y , cv=10)
 # print("Accuracy of GP+Sum after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua3scores.mean(), Gaua3scores.std() * 2))
 
 Gaua4 = GaussianProcessClassifier(C(0.1, (0.00001, 10.0)))
-Gaua4scores = cross_val_score(Gaua4, X, Y , cv=10)
-print("Accuracy of GP+Cst after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua4scores.mean(), Gaua4scores.std() * 2))
+Gaua4scores = cross_val_score(Gaua4, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+Cst after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua4scores.mean(), Gaua4scores.std() * 2))
