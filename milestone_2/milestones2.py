@@ -111,9 +111,9 @@ Gaua1 = GaussianProcessClassifier(1.0 * RBF(1.0))
 Gaua1scores = cross_val_score(Gaua1, X, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of GP+RBF after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua1scores.mean(), Gaua1scores.std() * 2))
 
-Gaua2 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0))
-Gaua2scores = cross_val_score(Gaua2, X, Y , scoring=make_scorer(log_loss), cv=10)
-print("Negative-log-loss of GP+Dot after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua2scores.mean(), Gaua2scores.std() * 2))
+# Gaua2 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0))
+# Gaua2scores = cross_val_score(Gaua2, X, Y , scoring=make_scorer(log_loss), cv=10)
+# print("Negative-log-loss of GP+Dot after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua2scores.mean(), Gaua2scores.std() * 2))
 
 Gaua3 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0)**2)
 Gaua3scores = cross_val_score(Gaua3, X, Y , scoring=make_scorer(log_loss), cv=10)
