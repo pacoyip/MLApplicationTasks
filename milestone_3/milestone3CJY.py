@@ -8,6 +8,8 @@ import random as rnd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
 
 # machine learning
 # milestones1
@@ -23,9 +25,7 @@ from sklearn.gaussian_process.kernels import Product, ConstantKernel as C
 # milestone3
 from sklearn.decomposition import PCA
 from sklearn.decomposition import KernelPCA
-from sklearn.preprocessing import StandardScaler
-from sklearn.kernel_approximation import RBFSampler
-from sklearn.linear_model import SGDClassifier
+
 
 # cross validation
 from sklearn import cross_validation
@@ -110,11 +110,11 @@ plt.figure(figsize=(14,12))
 plt.title('Pearson Correlation of Features', y=1.05, size=15)
 sns.heatmap(train_df.astype(float).corr(),linewidths=0.1,vmax=1.0,
             square=True, cmap=colormap, linecolor='white', annot=True)
-###################### Add two high correlated data
-X_gender = train_df.drop(["Survived","Embarked","Fare","Alone","Age"], axis=1)
-#X_pclass = train_df["Pclass"]
 
-#kf=KFold(len(Y), n_folds=10)   in cross_val_score, is cv=int n, then, is use n_fold validation
+###################### Add two high correlated data
+X_main = train_df.drop(["Survived","Embarked","Alone","Age","Fare"], axis=1)
+
+############################################### Original
 
 logreg = LogisticRegression()
 logregscores = cross_val_score(logreg, X, Y , scoring=make_scorer(log_loss), cv=10)
@@ -127,34 +127,46 @@ print("Negative-log-loss of percep after 10fold-val: %0.2f (+/- %0.2f)" % (perce
 DCtree = tree.DecisionTreeClassifier()
 DCtreescores = cross_val_score(DCtree, X, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of DCtree after 10fold-val: %0.2f (+/- %0.2f)" % (DCtreescores.mean(), DCtreescores.std() * 2))
-#
+
 # #Gaua = GaussianProcessClassifier(kernel=default RBF + dotproduct + dotproduct**2 + Constant)
 Gaua1 = GaussianProcessClassifier(1.0 * RBF(1.0))
 Gaua1scores = cross_val_score(Gaua1, X, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of GP+RBF after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua1scores.mean(), Gaua1scores.std() * 2))
-#
-# # Gaua2 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0))
-# # Gaua2scores = cross_val_score(Gaua2, X, Y , scoring=make_scorer(log_loss), cv=10)
-# # print("Negative-log-loss of GP+Dot after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua2scores.mean(), Gaua2scores.std() * 2))
-#
+
 # Gaua3 = GaussianProcessClassifier(1.0 * DotProduct(sigma_0=1.0)**2)
 # Gaua3scores = cross_val_score(Gaua3, X, Y , scoring=make_scorer(log_loss), cv=10)
 # print("Negative-log-loss of GP+D^2 after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua3scores.mean(), Gaua3scores.std() * 2))
-#
-# # Gaua3 = GaussianProcessClassifier(Product(1.0 * RBF(1.0), 1.0 * DotProduct(sigma_0=1.0)**2))
-# # Gaua3scores = cross_val_score(Gaua3, X, Y , cv=10)
-# # print("Accuracy of GP+Sum after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua3scores.mean(), Gaua3scores.std() * 2))
-#
-# Gaua4 = GaussianProcessClassifier(C(0.1, (0.00001, 10.0)))
-# Gaua4scores = cross_val_score(Gaua4, X, Y , scoring=make_scorer(log_loss), cv=10)
-# print("Negative-log-loss of GP+Cst after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua4scores.mean(), Gaua4scores.std() * 2))
 
+Gaua4 = GaussianProcessClassifier(C(0.1, (0.00001, 10.0)))
+Gaua4scores = cross_val_score(Gaua4, X, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+Cst after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua4scores.mean(), Gaua4scores.std() * 2))
+print(" ")
+############################################### main feature
+
+logregscores1 = cross_val_score(logreg, X_main, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of logreg of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (logregscores1.mean(), logregscores1.std() * 2))
+
+percepscores1 = cross_val_score(percep, X_main, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of percep of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (percepscores1.mean(), percepscores1.std() * 2))
+
+DCtreescores1 = cross_val_score(DCtree, X_main, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of DCtree of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (DCtreescores1.mean(), DCtreescores1.std() * 2))
+
+Gaua1scores1 = cross_val_score(Gaua1, X_main, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+RBF of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua1scores1.mean(), Gaua1scores1.std() * 2))
+
+# Gaua3scores1 = cross_val_score(Gaua3, X_main, Y , scoring=make_scorer(log_loss), cv=10)
+# print("Negative-log-loss of GP+D^2 of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua3scores1.mean(), Gaua3scores1.std() * 2))
+
+Gaua4scores1 = cross_val_score(Gaua4, X_main, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+Cst of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (Gaua4scores1.mean(), Gaua4scores1.std() * 2))
+print(" ")
 
 ############################################### dimension reduction
 X_centered = X - X.mean(axis=0)
 kpca = KernelPCA(kernel="rbf",n_components=2, gamma=0.125)
 X_kpca = kpca.fit_transform(X_centered)
-pca = PCA(n_components=2, svd_solver="auto", whiten=False)
+pca = PCA(n_components=2, svd_solver="randomized", whiten=False)
 X_pca = pca.fit_transform(X_centered)
 
 plt.figure()
@@ -173,18 +185,9 @@ plt.title("Projection by KPCA")
 plt.xlabel("1st principal component")
 plt.ylabel("2nd component")
 
-# plt.subplot(2, 2, 3, aspect='equal')
-# plt.scatter(X_gender[Y == 0, 0], X_gender[Y == 0, 1], c="red", s=20, edgecolor='k')
-# plt.scatter(X_gender[Y == 1, 0], X_gender[Y == 1, 1], c="blue",s=20, edgecolor='k')
-# plt.title("Projection by choose")
-# plt.xlabel("1st principal component")
-# plt.ylabel("2nd component")
-
-
 plt.show()
 
-logregscoresSex = cross_val_score(logreg, X_gender, Y , scoring=make_scorer(log_loss), cv=10)
-print("Negative-log-loss of logreg of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (logregscoresSex.mean(), logregscoresSex.std() * 2))
+############################################### PCA
 
 logregscores2 = cross_val_score(logreg, X_pca, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of logreg after PCA & 10fold-val: %0.2f (+/- %0.2f)" % (logregscores2.mean(), logregscores2.std() * 2))
@@ -198,6 +201,13 @@ print("Negative-log-loss of DCtree after PCA & 10fold-val: %0.2f (+/- %0.2f)" % 
 Gaua1scores2 = cross_val_score(Gaua1, X_pca, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of GP+RBF after PCA & 10fold-val: %0.2f (+/- %0.2f)" % (Gaua1scores2.mean(), Gaua1scores2.std() * 2))
 
+# Gaua3scores2 = cross_val_score(Gaua3, X_pca, Y , scoring=make_scorer(log_loss), cv=10)
+# print("Negative-log-loss of GP+D^2 after PCA & 10fold-val: %0.2f (+/- %0.2f)" % (Gaua3scores2.mean(), Gaua3scores2.std() * 2))
+
+Gaua4scores2 = cross_val_score(Gaua4, X_pca, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+Cst after PCA & 10fold-val: %0.2f (+/- %0.2f)" % (Gaua4scores2.mean(), Gaua4scores2.std() * 2))
+print(" ")
+############################################### KPCA
 
 logregscores3 = cross_val_score(logreg, X_kpca, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of logreg after KPCA & 10fold-val: %0.2f (+/- %0.2f)" % (logregscores3.mean(), logregscores3.std() * 2))
@@ -210,3 +220,10 @@ print("Negative-log-loss of DCtree after KPCA & 10fold-val: %0.2f (+/- %0.2f)" %
 
 Gaua1scores3 = cross_val_score(Gaua1, X_kpca, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of GP+RBF after KPCA & 10fold-val: %0.2f (+/- %0.2f)" % (Gaua1scores3.mean(), Gaua1scores3.std() * 2))
+
+# Gaua3scores3 = cross_val_score(Gaua3, X_kpca, Y , scoring=make_scorer(log_loss), cv=10)
+# print("Negative-log-loss of GP+D^2 after KPCA & 10fold-val: %0.2f (+/- %0.2f)" % (Gaua3scores3.mean(), Gaua3scores3.std() * 2))
+
+Gaua4scores3 = cross_val_score(Gaua4, X_kpca, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of GP+Cst after KPCA & 10fold-val: %0.2f (+/- %0.2f)" % (Gaua4scores3.mean(), Gaua4scores3.std() * 2))
+print(" ")
