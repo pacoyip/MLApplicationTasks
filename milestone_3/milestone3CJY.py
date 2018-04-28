@@ -7,6 +7,7 @@ from pandas import Series, DataFrame
 import random as rnd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # machine learning
 # milestones1
@@ -22,7 +23,6 @@ from sklearn.gaussian_process.kernels import Product, ConstantKernel as C
 # milestone3
 from sklearn.decomposition import PCA
 from sklearn.decomposition import KernelPCA
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.kernel_approximation import RBFSampler
 from sklearn.linear_model import SGDClassifier
@@ -40,7 +40,6 @@ from sklearn.metrics import make_scorer
 
 ########################################### load data
 train_df = pd.read_csv("/Users/jiayaocheng/Documents/517Python/Titanic/train.csv")
-
 
 ########################################### preprocess
 # dropping features that not related(name and id) or not very useful(ticket) or too many null values(cabin)
@@ -105,6 +104,16 @@ train_df['Embarked'] = train_df['Embarked'].map({'S': 0, 'C': 1, 'Q': 2}).astype
 #X_train, X_test, Y_train, Y_test = train_test_split(train_df.drop("Survived", axis=1), train_df["Survived"],test_size=0.2, random_state=0)
 X = train_df.drop("Survived", axis=1)
 Y = train_df["Survived"]
+
+colormap = plt.cm.RdBu
+plt.figure(figsize=(14,12))
+plt.title('Pearson Correlation of Features', y=1.05, size=15)
+sns.heatmap(train_df.astype(float).corr(),linewidths=0.1,vmax=1.0,
+            square=True, cmap=colormap, linecolor='white', annot=True)
+###################### Add two high correlated data
+X_gender = train_df.drop(["Survived","Embarked","Fare","Alone","Age"], axis=1)
+#X_pclass = train_df["Pclass"]
+
 #kf=KFold(len(Y), n_folds=10)   in cross_val_score, is cv=int n, then, is use n_fold validation
 
 logreg = LogisticRegression()
@@ -164,8 +173,18 @@ plt.title("Projection by KPCA")
 plt.xlabel("1st principal component")
 plt.ylabel("2nd component")
 
+# plt.subplot(2, 2, 3, aspect='equal')
+# plt.scatter(X_gender[Y == 0, 0], X_gender[Y == 0, 1], c="red", s=20, edgecolor='k')
+# plt.scatter(X_gender[Y == 1, 0], X_gender[Y == 1, 1], c="blue",s=20, edgecolor='k')
+# plt.title("Projection by choose")
+# plt.xlabel("1st principal component")
+# plt.ylabel("2nd component")
+
+
 plt.show()
 
+logregscoresSex = cross_val_score(logreg, X_gender, Y , scoring=make_scorer(log_loss), cv=10)
+print("Negative-log-loss of logreg of two main features after 10fold-val: %0.2f (+/- %0.2f)" % (logregscoresSex.mean(), logregscoresSex.std() * 2))
 
 logregscores2 = cross_val_score(logreg, X_pca, Y , scoring=make_scorer(log_loss), cv=10)
 print("Negative-log-loss of logreg after PCA & 10fold-val: %0.2f (+/- %0.2f)" % (logregscores2.mean(), logregscores2.std() * 2))
